@@ -1,0 +1,180 @@
+The queries to be executed in neo4j desktop
+
+STEP 1: Create New Local Instance
+In Neo4j Desktop, click Create instance
+Choose Local DB
+Fill details:
+Name: KARE_KG
+Password: set something simple & remember it
+Version: latest stable
+Click Create
+
+
+STEP 2: Start the Instance
+Click the Start button
+Wait until status shows RUNNING (green)
+
+
+STEP 3: Create Database inside it
+Click Create database
+Database name: kare
+Click Create
+
+
+// Not necessary
+STEP 4: Open Neo4j Browser
+Click Connect → Neo4j Browser
+Login:
+username: neo4j
+password: (what you set)
+
+
+In Neo4j Desktop → KARE_KG
+Click … (three dots) → Open Folder(Instance) You must open the Instance folder, then go inside → import.
+Open the folder named import
+Navigate to the import folder
+Once the folder opens in File Explorer, you’ll see something like:
+KARE_KG/
+ ├── conf/
+ ├── data/
+ ├── import/   THIS ONE
+ ├── logs/
+ └── plugins/
+Open the import folder.
+Copy all 5 CSV files into this folder:
+drugs.csv
+diseases.csv
+genes.csv
+pathways.csv
+relationships.csv
+This step is compulsory.
+If files are not here, imports will silently fail.
+
+
+Go back to Neo4j Browser
+Now open Query and make sure you’re using the correct DB:
+
+:use kare
+
+RETURN "KARE KG is ready" AS status;
+
+LOAD CSV WITH HEADERS FROM 'file:///drugs.csv' AS row
+CREATE (:Drug {
+  drug_id: row.drug_id,
+  name: row.drug_name,
+  class: row.drug_class,
+  mechanism: row.mechanism_of_action
+});
+
+MATCH (d:Drug) RETURN d;
+
+LOAD CSV WITH HEADERS FROM 'file:///diseases.csv' AS row
+CREATE (:Disease {
+  disease_id: row.disease_id,
+  name: row.disease_name,
+  category: row.disease_category,
+  pathology: row.pathophysiology
+});
+
+MATCH (d:Disease) RETURN d;
+
+LOAD CSV WITH HEADERS FROM 'file:///genes.csv' AS row
+CREATE (:Gene {
+  gene_id: row.gene_id,
+  name: row.gene_name,
+  function: row.biological_function
+});
+
+MATCH (g:Gene) RETURN g;
+
+LOAD CSV WITH HEADERS FROM 'file:///pathways.csv' AS row
+CREATE (:Pathway {
+  pathway_id: row.pathway_id,
+  name: row.pathway_name,
+  process: row.biological_process
+});
+
+MATCH (p:Pathway) RETURN p;
+
+Drug → Gene (INHIBITS / ACTIVATES): // Don't paste this. This is the heading
+LOAD CSV WITH HEADERS FROM 'file:///relationships.csv' AS row
+MATCH (d:Drug {name: row.source})
+MATCH (g:Gene {name: row.target})
+WHERE row.relationship IN ['INHIBITS','ACTIVATES']
+CREATE (d)-[:INHIBITS]->(g);
+
+Gene → Disease:
+LOAD CSV WITH HEADERS FROM 'file:///relationships.csv' AS row
+MATCH (g:Gene {name: row.source})
+MATCH (ds:Disease {name: row.target})
+WHERE row.relationship = 'ASSOCIATED_WITH'
+CREATE (g)-[:ASSOCIATED_WITH]->(ds);
+
+Gene → Pathway
+LOAD CSV WITH HEADERS FROM 'file:///relationships.csv' AS row
+MATCH (g:Gene {name: row.source})
+MATCH (p:Pathway {name: row.target})
+WHERE row.relationship = 'PARTICIPATES_IN'
+CREATE (g)-[:PARTICIPATES_IN]->(p);
+
+Drug → Disease (TREATS / POTENTIAL_REPURPOSE)
+LOAD CSV WITH HEADERS FROM 'file:///relationships.csv' AS row
+MATCH (d:Drug {name: row.source})
+MATCH (ds:Disease {name: row.target})
+WHERE row.relationship IN ['TREATS','POTENTIAL_REPURPOSE']
+CREATE (d)-[:POTENTIAL_REPURPOSE]->(ds);
+
+FINAL VERIFICATION (VERY IMPORTANT)
+MATCH (n)-[r]->(m)
+RETURN n, r, m;
+
+You should now visually see:
+Drug → Gene
+Gene → Pathway
+Gene → Disease
+Drug → Disease
+
+Run these queries one by one and look carefully at the names.
+MATCH (d:Drug) RETURN d.name;
+MATCH (g:Gene) RETURN g.name;
+MATCH (ds:Disease) RETURN ds.name;
+MATCH (p:Pathway) RETURN p.name;
+Compare these names with what is written in relationships.csv.
+
+Basic sanity queries
+List all drugs
+MATCH (d:Drug) RETURN d.name;
+
+List all diseases
+MATCH (d:Disease) RETURN d.name;
+
+Drug → Gene (How does a drug work?)
+MATCH (d:Drug)-[:INHIBITS]->(g:Gene)
+RETURN d.name AS Drug, g.name AS Target_Gene;
+This answers:
+Which gene does this drug affect?
+
+Gene → Disease (Disease mechanism)
+MATCH (g:Gene)-[:ASSOCIATED_WITH]->(ds:Disease)
+RETURN g.name AS Gene, ds.name AS Disease;
+This answers:
+Which diseases are linked to this gene?
+
+Multi-hop reasoning (CORE QUERY)
+This is the most important query in your project.
+MATCH (d:Drug)-[:INHIBITS]->(g:Gene)-[:ASSOCIATED_WITH]->(ds:Disease)
+RETURN d.name AS Drug, g.name AS Gene, ds.name AS Disease;
+This directly implements:
+Drug → Gene → Disease reasoning
+
+dd pathway context (Explainability)
+MATCH (d:Drug)-[:INHIBITS]->(g:Gene)-[:PARTICIPATES_IN]->(p:Pathway),
+      (g)-[:ASSOCIATED_WITH]->(ds:Disease)
+RETURN d.name AS Drug, g.name AS Gene, p.name AS Pathway, ds.name AS Disease;
+This answers:
+Through which biological pathway does the drug affect the disease?
+
+Repurposing suggestions
+MATCH (d:Drug)-[:POTENTIAL_REPURPOSE]->(ds:Disease)
+RETURN d.name AS Drug, ds.name AS Suggested_Disease;
+This is your final output logic.

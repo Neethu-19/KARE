@@ -1,0 +1,4 @@
+gene_id,gene_name,biological_function
+G001,mTOR,Cell growth and metabolism regulation
+G002,AKT1,Cell survival and insulin signaling
+G003,AMPK,Energy balance and metabolic stress regulation

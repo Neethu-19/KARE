@@ -1,0 +1,4 @@
+disease_id,disease_name,disease_category,pathophysiology
+DIS001,Alzheimer's Disease,Neurological,Amyloid-beta accumulation
+DIS002,Type 2 Diabetes,Metabolic,Insulin resistance
+DIS003,Parkinson's Disease,Neurological,Dopaminergic neuron degeneration

@@ -1,0 +1,4 @@
+pathway_id,pathway_name,biological_process
+PW001,mTOR signaling,Cell growth and autophagy regulation
+PW002,AMPK signaling,Energy homeostasis
+PW003,PI3K-AKT signaling,Cell survival and metabolism

@@ -1,0 +1,5 @@
+drug_id,drug_name,drug_class,mechanism_of_action
+D001,Metformin,Biguanide,Activates AMPK pathway
+D002,Sildenafil,PDE5 inhibitor,Improves nitric oxide signaling
+D003,Rapamycin,mTOR inhibitor,Direct inhibition of mTOR complex
+D004,Donepezil,Cholinesterase inhibitor,Enhances cholinergic neurotransmission

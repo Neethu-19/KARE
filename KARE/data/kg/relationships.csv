@@ -1,0 +1,17 @@
+source,relationship,target
+Metformin,INHIBITS,mTOR
+Metformin,ACTIVATES,AMPK
+Rapamycin,INHIBITS,mTOR
+Donepezil,TREATS,Alzheimer's Disease
+Sildenafil,POTENTIAL_REPURPOSE,Type 2 Diabetes
+
+mTOR,ASSOCIATED_WITH,Alzheimer's Disease
+AKT1,ASSOCIATED_WITH,Type 2 Diabetes
+AMPK,ASSOCIATED_WITH,Parkinson's Disease
+
+mTOR,PARTICIPATES_IN,mTOR signaling
+AMPK,PARTICIPATES_IN,AMPK signaling
+AKT1,PARTICIPATES_IN,PI3K-AKT signaling
+
+Rapamycin,POTENTIAL_REPURPOSE,Alzheimer's Disease
+Metformin,POTENTIAL_REPURPOSE,Alzheimer's Disease
